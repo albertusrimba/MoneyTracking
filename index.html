@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f6f2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pengeluaran">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Catatan Pengeluaran</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <p class="eyebrow">CATATAN HARIAN</p>
+      <h1>Pengeluaran</h1>
+      <p class="intro">Catat sekarang, biar uangmu lebih terarah.</p>
+      <p id="offline-status" class="offline-status" role="status">Mode offline akan disiapkan.</p>
+      <details class="install-guide">
+        <summary>Pasang di iPhone dan gunakan offline</summary>
+        <ol>
+          <li>Buka alamat GitHub Pages ini di Safari saat online.</li>
+          <li>Ketuk tombol Bagikan, lalu pilih <strong>Tambahkan ke Layar Utama</strong>.</li>
+          <li>Buka aplikasi sekali saat online agar asetnya tersimpan. Setelah itu, aplikasi bisa dibuka tanpa internet.</li>
+        </ol>
+        <p>Data dan foto tetap tersimpan hanya di perangkat ini. iOS masih dapat menghapus data situs; buat backup berkala.</p>
+      </details>
+    </header>
+
+    <nav class="view-tabs" aria-label="Halaman aplikasi">
+      <button id="entry-tab" class="view-tab" type="button" aria-pressed="true">Catat</button>
+      <button id="history-tab" class="view-tab" type="button" aria-pressed="false">Riwayat</button>
+      <button id="stats-tab" class="view-tab" type="button" aria-pressed="false">Grafik</button>
+    </nav>
+
+    <div id="entry-view">
+    <section class="card entry-card" aria-labelledby="entry-heading">
+      <h2 id="entry-heading">Pengeluaran baru</h2>
+      <div class="amount-display" aria-live="polite">
+        <span class="amount-label">Jumlah</span>
+        <output id="amount-output" for="keypad">Rp 0</output>
+      </div>
+
+      <div class="field-heading">
+        <h3>Kategori</h3>
+        <span id="category-hint">Pilih satu</span>
+      </div>
+      <div id="category-list" class="category-list" aria-label="Pilih kategori"></div>
+
+      <div class="field-row">
+        <label for="expense-date">Tanggal</label>
+        <input id="expense-date" type="date" required>
+      </div>
+      <div class="field-row">
+        <label for="expense-note">Catatan <span>(opsional)</span></label>
+        <input id="expense-note" type="text" maxlength="120" placeholder="Contoh: makan siang">
+      </div>
+      <div class="field-row">
+        <label for="receipt-image">Bukti pembayaran <span>(opsional)</span></label>
+        <input id="receipt-image" type="file" accept="image/*">
+        <p class="field-help">Foto disimpan di perangkat ini dan diperkecil otomatis (maks. 15 MB sebelum diperkecil).</p>
+        <div id="receipt-preview" class="receipt-preview" hidden>
+          <img id="receipt-preview-image" alt="Pratinjau bukti pembayaran">
+          <button id="remove-receipt" class="text-button" type="button">Lepas foto</button>
+        </div>
+      </div>
+
+      <div class="keypad" id="keypad" aria-label="Keypad jumlah">
+        <button type="button" data-digit="1">1</button>
+        <button type="button" data-digit="2">2</button>
+        <button type="button" data-digit="3">3</button>
+        <button type="button" data-digit="4">4</button>
+        <button type="button" data-digit="5">5</button>
+        <button type="button" data-digit="6">6</button>
+        <button type="button" data-digit="7">7</button>
+        <button type="button" data-digit="8">8</button>
+        <button type="button" data-digit="9">9</button>
+        <button type="button" class="keypad-secondary" data-action="clear">Hapus</button>
+        <button type="button" data-digit="0">0</button>
+        <button type="button" class="keypad-secondary" data-action="backspace" aria-label="Hapus satu angka">⌫</button>
+      </div>
+
+      <button id="save-expense" class="primary-button" type="button" disabled>Simpan pengeluaran</button>
+    </section>
+
+    <section class="recent-section" aria-labelledby="recent-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YANG TERAKHIR</p>
+          <h2 id="recent-heading">Transaksi terbaru</h2>
+        </div>
+        <span id="expense-count" class="count-label"></span>
+      </div>
+      <div id="expense-list" class="expense-list"></div>
+    </section>
+    </div>
+
+    <section id="history-view" class="history-view" aria-labelledby="history-heading" hidden>
+      <div class="history-breadcrumb">
+        <span>Riwayat</span>
+        <span aria-hidden="true">›</span>
+        <strong id="history-month-label"></strong>
+      </div>
+      <div class="history-title-row">
+        <button id="previous-month" class="month-nav" type="button" aria-label="Bulan sebelumnya">‹</button>
+        <h2 id="history-heading"></h2>
+        <button id="next-month" class="month-nav" type="button" aria-label="Bulan berikutnya">›</button>
+      </div>
+      <div class="history-controls">
+        <label class="month-picker-label" for="history-month">Pilih folder bulan</label>
+        <input id="history-month" type="month">
+        <label class="search-field" for="history-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="history-search" type="search" aria-label="Cari catatan atau kategori" placeholder="Cari catatan atau kategori...">
+        </label>
+      </div>
+      <p id="history-summary" class="history-summary"></p>
+      <div id="history-list" class="history-list"></div>
+    </section>
+
+    <section id="stats-view" class="stats-view" aria-labelledby="stats-heading" hidden>
+      <p class="eyebrow">RINGKASAN</p>
+      <h2 id="stats-heading">Pengeluaranmu</h2>
+      <label class="month-picker-label" for="stats-period">Periode</label>
+      <select id="stats-period" class="stats-period">
+        <option value="this-week">Minggu ini</option>
+        <option value="last-week">Minggu lalu</option>
+        <option value="custom">Pilih rentang tanggal</option>
+      </select>
+
+      <div id="stats-custom-range" class="stats-custom-range" hidden>
+        <div class="field-row">
+          <label for="stats-start-date">Dari tanggal</label>
+          <input id="stats-start-date" type="date">
+        </div>
+        <div class="field-row">
+          <label for="stats-end-date">Sampai tanggal</label>
+          <input id="stats-end-date" type="date">
+        </div>
+      </div>
+
+      <p id="stats-period-label" class="history-summary"></p>
+      <p id="stats-error" class="stats-error" role="status" hidden></p>
+
+      <article class="card stats-total-card">
+        <p id="stats-total-caption" class="amount-label">Total pengeluaran</p>
+        <p id="stats-total" class="stats-total">Rp 0</p>
+        <div class="stats-detail-row">
+          <span id="stats-expense-count">0 transaksi</span>
+          <span id="stats-daily-average">Rata-rata Rp 0/hari</span>
+        </div>
+      </article>
+
+      <article class="card chart-card">
+        <h3>Tren pengeluaran</h3>
+        <p id="chart-period-note" class="field-help">Jumlah pengeluaran per hari</p>
+        <div class="chart-container">
+          <canvas id="spending-chart" role="img" aria-label="Grafik pengeluaran pada periode yang dipilih"></canvas>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="receipt-dialog" class="receipt-dialog">
+    <button id="close-receipt-dialog" class="dialog-close" type="button" aria-label="Tutup">×</button>
+    <img id="receipt-dialog-image" alt="Bukti pembayaran">
+    <p id="receipt-dialog-caption"></p>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-message"></span>
+    <button id="undo-button" type="button" hidden>Urungkan</button>
+  </div>
+  <script src="./lib/chart.umd.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
